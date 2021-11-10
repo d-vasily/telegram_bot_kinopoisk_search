@@ -1,5 +1,7 @@
-db_file = 'users.vdb'
 from vedis import Vedis
+import pandas as pd
+
+db_file = 'users.vdb'
 
 
 def get_info(key):
@@ -19,12 +21,12 @@ def set_info(key, value):
             return False
 
 
-def del_state(user_id):
+def del_info(key):
     with Vedis(db_file) as db:
         try:
-            del(db[user_id])
+            del(db[key])
             return True
-        except:
+        except Exception:
             return False
 
 
@@ -39,5 +41,24 @@ def get_parameters(key):
     if res[5] == 'all':
         res[5] = 'films and serials'
 # data_film(genre='',sort='', rating='', subscript='available_online', country='', kind=''(film/serial), page=''):
-    return f'genre - {res[0]}; sort - {res[1]}; rating - {res[2]};\
-\nsubscript - {res[3]}; country - {res[4]}; kind - {res[5]}; page - {res[6]}'
+    return f'genre - {res[0]}\nsort - {res[1]}\nrating - {res[2]}\n\
+subscript - {res[3]}\ncountry - {res[4]}\nkind - {res[5]}'
+
+
+def change_temp_films(key, df_ten):
+    df_films = pd.read_csv("df_films.csv")
+    old_temp_films = key
+    if type(key) != list:
+        old_temp_films = get_info(key).split('|')
+    if old_temp_films[0] != 'null':
+        df_films['users'] -= df_films['name'].isin(old_temp_films)
+    if type(key) != str:
+        df_films.to_csv('df_films.csv', index=False)
+        return
+    df_films['users'] += df_films['name'].isin(df_ten['name'])
+    df_films = pd.concat([df_films, df_ten]).drop_duplicates('name').reset_index(drop=True)
+    if df_films.shape[0] > 5000:
+        df_films = df_films[df_films.users > 0]
+    df_films.to_csv('df_films.csv', index=False)
+    new_temp_films = list(df_ten['name'])
+    set_info(key, '|'.join(new_temp_films))
