@@ -21,7 +21,7 @@ if not (exists('df_films.csv') and exists('users.vdb')):
 
 
 # kinopoist_search_bot
-TOKEN = '2061129559:AAGIIMpRztdc3cA-kfxYxhd0ZGIx5FeLAGs'  # это мой токен
+TOKEN = ''
 bot = tb.TeleBot(token=TOKEN)
 bot.remove_webhook()
 
